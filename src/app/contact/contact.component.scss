@@ -1,0 +1,6 @@
+@use '../../theme' as theme;
+
+mat-icon {
+  color: map-get(theme.$light-primary, 500);
+  transform: scale(2);
+}

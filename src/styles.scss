@@ -1,0 +1,118 @@
+@use 'theme'as theme;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+//Theme
+.primary {
+  background-color: #0D1E4B;
+}
+
+.primary-text {
+  color: #0D1E4B;
+}
+
+.secondary {
+  background-color: #BD9E6F;
+}
+
+.secondary-text {
+  color: #BD9E6F;
+}
+
+.tertiary {
+  background-color: #222f5b;
+}
+
+.quaternary {
+  background-color: #5d5d5d;
+}
+
+html,
+body {
+  // height: 100%;
+  // background-image: url('./assets/images/hero-ph.jpg');
+  // background-size: cover;
+  // background-position: top;
+  // background-repeat: no-repeat;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+button {
+  background-color: map-get(theme.$light-primary, 500);
+  color: #fff;
+  letter-spacing: 1.5px;
+}
+
+button:hover {
+  opacity: .9;
+}
+
+a:hover {
+  opacity: .8;
+}
+
+.bag-color {
+  background-color: #EBF1F4;
+}
+
+.page-container {
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  h1 {
+    padding-bottom: 2rem;
+    text-align: center;
+    color: map-get(theme.$light-accent, 400);
+    font-weight: 300;
+  }
+
+  &.flex-col {
+    flex-direction: column;
+  }
+
+  &.flex-row {
+    flex-direction: row;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .page-container {
+    padding: 2rem;
+    align-items: flex-start;
+  }
+
+  .page-container.flex-col {
+    align-items: center;
+    justify-content: flex-start;
+  }
+}
+.login-container {
+  background-color: #EBF1F4;
+}
+
+@media only screen and (min-width: 1800px) {
+  .page-container {
+    padding-top: 10%;
+    align-items: flex-start;
+  }
+
+  .page-container.flex-col {
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .base-container {
+    width: 85%;
+    margin:0 auto
+  }
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

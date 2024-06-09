@@ -1,0 +1,6 @@
+@use '../../theme' as theme;
+
+h1 {
+  color: map-get(theme.$light-primary, 500);
+  color:black;
+}
