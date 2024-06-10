@@ -22,7 +22,7 @@ import { SecurityComponent } from './security.component';
 @NgModule({
   declarations: [
     SecurityComponent,
-    SigninComponent
+    SigninComponent,
   ],
   imports: [
     CommonModule,
@@ -30,12 +30,12 @@ import { SecurityComponent } from './security.component';
     FormsModule,
     ReactiveFormsModule, 
     HttpClientModule,
-    RouterModule 
+    RouterModule,
+    HttpClientModule,
     
   ],
   providers: [
-    // HttpClient,
-    // HttpClientModule
+
   ],
 })
 export class SecurityModule { }

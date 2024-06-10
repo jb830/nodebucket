@@ -1,11 +1,11 @@
-nav {
+a {
+  color: #fff;
+}
+
+a:hover {
+  opacity: .75;
+}
+
+.nav-bg {
   background-color: #041222;
-
-  a {
-    color: #fff;
-  }
-
-  a:hover {
-    opacity: .75;
-  }
 }

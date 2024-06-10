@@ -16,6 +16,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { SecurityService } from './security/security.service';
+import { HttpClientModule } from '@angular/common/http'; 
 
 // Material
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -53,6 +54,7 @@ import { TasksComponent } from './tasks/tasks.component';
     RouterModule,
     BrowserAnimationsModule,
     MatIconModule,
+    HttpClientModule
   ],
   providers: [
     CookieService,

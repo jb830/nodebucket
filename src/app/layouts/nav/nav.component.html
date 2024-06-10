@@ -1,30 +1,42 @@
-<nav class="">
+<nav class="nav-bg">
   <div class="base-container flex flex-wrap items-center justify-between mx-auto py-1 px-4">
-    <a routerLink = "/" class="flex items-center pl-2">
+    <a routerLink="/" class="flex items-center pl-2">
       <img src="assets/images/logo-white.png" alt="Node Bucket Logo" width="200px" class="p-1">
       <span class="self-center text-2xl font-semibold whitespace-nowrap"></span>
     </a>
-    <button (click)="toggleMenu()" id="menu-toggle" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg md:hidden bg-transparent focus:outline-none focus:ring-2 focus:ring-gray-200" aria-controls="navbar-default" aria-expanded="false">
+    <button (click)="toggleMenu()" id="menu-toggle" type="button"
+      class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm rounded-lg md:hidden bg-transparent focus:outline-none focus:ring-2 focus:ring-gray-200"
+      aria-controls="navbar-default" aria-expanded="false">
       <span class="sr-only">Open main menu</span>
       <mat-icon class="text-white">menu</mat-icon>
     </button>
-    <div [ngClass]="{'hidden': !menuVisible, 'block': menuVisible, 'w-full': true, 'md:block': true, 'md:w-auto': true}" id="navbar-default">
-      <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0">
+    <div [ngClass]="{'hidden': !menuVisible, 'block': menuVisible, 'w-full': true, 'md:block': true, 'md:w-auto': true}"
+      id="navbar-default">
+      <ul
+        class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0">
+        <li><a routerLink="/" class="block py-1 px-2 uppercase tracking-wide">Home</a></li>
+        <li><a routerLink="about" class="block py-1 px-2 uppercase tracking-wide">about</a></li>
+        <li><a routerLink="contact" class="block py-1 px-2 uppercase tracking-wide">contact</a></li>
+        
         <li>
-          <a routerLink="/" class="block py-1 px-2 uppercase tracking-wide">Home</a>        </li>
-        <li>
-          <a routerLink="about" class="block py-1 px-2 uppercase tracking-wide">about</a>
-        </li>
-        <li>
-          <a routerLink="contact" class="block py-1 px-2 uppercase tracking-wide">contact</a>
-        </li>
-        <li >
-          <a routerLink="login" class="block py-1 px-2 uppercase tracking-wide">log in</a>
-        </li>
-        <li >
-          <a routerLink="login" class="block py-1 px-2 uppercase tracking-wide">
-            <mat-icon class="text-white ">person</mat-icon>
+          <a *ngIf="!isSignedIn" routerLink="/security/login" class="block py-1 px-2 uppercase tracking-wide">log
+            in
           </a>
+        </li>
+
+        <li *ngIf="isSignedIn" class="logged-in-menu relative">
+          <a (click)="toggleDropdown()" class="flex items-center px-2 py-1 md:px-0 uppercase tracking-wide bg-transparent">
+            <span>Hi, {{ appUser.fullName }}</span>
+            <mat-icon>arrow_drop_down</mat-icon>
+          </a>
+          <ul *ngIf="dropdownVisible" class="absolute md:right-0 mt-3.5 w-48 nav-bg rounded-b-lg">
+            <li>
+              <a routerLink="/tasks" class="block w-full text-left py-2 px-4">Tasks</a>
+            </li>
+            <li>
+              <a (click)="signOut()" class="block w-full text-left py-2 px-4">Sign Out</a>
+            </li>
+          </ul>
         </li>
       </ul>
     </div>
