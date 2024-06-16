@@ -1,3 +1,6 @@
 .login-container {
-  background-color: #EBF1F4;
+  min-height: 100vh;
+}
+.placeholder-err::placeholder {
+  color: rgb(153,27,27)
 }

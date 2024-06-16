@@ -10,8 +10,6 @@
 import { Injectable } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +18,7 @@ export class SecurityService {
 
   constructor(private http: HttpClient) { };
 
-  findEmployeeById(empId: number): Observable<any>{
+  findEmployeeById(empId: number) {
     return this.http.get(`/api/employees/` + empId);
   }
 }

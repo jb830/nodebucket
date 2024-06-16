@@ -8,96 +8,268 @@
 ;===========================================
 */
 
-"use strict";
-const express = require("express");
-const { mongo } = require("../utils/mongo");
-const createError = require("http-errors");
+'use strict';
+const express = require('express');
+const { mongo } = require('../utils/mongo');
+const createError = require('http-errors');
+const Ajv = require('ajv');
+const { ObjectId } = require('mongodb');
+const ajv = new Ajv();
 
 const router = express.Router();
 
-//404 resource not found 
-//500 server exception 
-//400 bad request 
-
 /**
- *  * findEmployeeById
+ * findEmployeeById
  * @openapi
  * /api/employees/{empId}:
  *   get:
  *     tags:
  *       - employees
  *     description: Returns employee by predefined empId
- *     summary: returns a employee document
+ *     summary: Returns an employee document
  *     parameters:
  *       - name: empId
  *         in: path
  *         required: true
- *         description: employee document id
+ *         description: Employee ID
  *         schema:
  *           type: string
  *     responses:
- *       '200':
+ *       200:
  *         description: Employee document requested by user
- *       '400':
+ *       400:
  *         description: Bad request 
- *       '404':
- *          description: Employee not found
- *       '500':
+ *       404:
+ *         description: Employee not found
+ *       500:
  *         description: Server exception
- *       '501':
- *         description: MongoDB Exception
  */
-router.get("/:empId", (req, res, next) => {
+router.get('/:empId', (req, res, next) => {
   try {
     let { empId } = req.params;
-    empId = parseInt(empId, 10); 
-
-    //If anything aside from numerical value is entered, send a 400 error //early return
-    if(isNaN(empId)) {
-      const err = new Error("Input must be a number");
+    empId = parseInt(empId, 10);
+    //if input not numerical,return 400 
+    if (isNaN(empId)) {
+      const err = new Error('Input must be a number');
       err.status = 400;
-      console.error(400, "Input must be a number" );
-      return next(err); 
+      console.error(400, 'Input must be a number');
+      return next(err);
     }
-
-    //find and return employee if exists, if not send 404 error
-    mongo(async db => {
-      const employee = await db.collection("employees").findOne({ empId });
-
+    
+    //fund employee by ID 
+    mongo(async (db) => {
+      const employee = await db.collection('employees').findOne({ empId });
+      //If no employee ID matches, send 404  
       if (!employee) {
-        console.error("Employee not found", empId);
-        return next(createError(404, "Employee not found"));
+        console.error('Employee not found', empId);
+        return next(createError(404, 'Employee not found'));
       }
 
+      //if no errors, return employee object by ID 
       res.json(employee);
-    }, next)
+    }, next);
 
-  //server error handling   
   } catch (err) {
-    console.error("Error:", err);
+    console.error('Error:', err);
     next(err);
   }
 });
 
-module.exports = router;
+/**
+ * findAllTasks
+ * @openapi
+ * /api/employees/{empId}/tasks:
+ *   get:
+ *     tags:
+ *       - employees
+ *     description: Returns tasks for employee by empId
+ *     summary: Returns tasks for employee
+ *     parameters:
+ *       - name: empId
+ *         in: path
+ *         required: true
+ *         description: Employee document ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success - Array of task items 
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Employee or Tasks Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/:empId/tasks', (req, res, next) => {
+  try {
+    let empId = req.params.empId;
+    empId = parseInt(empId, 10);
 
+    if (isNaN(empId)) {
+      return next(createError(400, 'Employee ID must be a number'));
+    }
 
-// Employees:
-// o findAllTasks:
-// ▪ Verb: GET
+    mongo(async (db) => {
+      const tasks = await db.collection('employees').findOne(
+        { empId: empId },
+        { projection: { empId: 1, todo: 1, done: 1 } }
+      );
+      console.log('tasks', tasks);
+      //if not employee has matching empId, return 404 
+      if (!tasks) {
+        return next(createError(404, `Employee not found for empId ${empId}`));
+      }
+      //if there are no tasks for employee, send 404 no tasks found 
+      if (!tasks.todo && !tasks.done) {
+        return next(createError(404, `No tasks exist for this employee ${empId}`));
+      }
+      //If tasks exist return the document 
+      res.send(tasks);
+    }, next);
+
+  } catch (err) {
+    console.error('Error:', err);
+    next(err);
+  }
+});
+
+/**
+ * createTask
+ * @openapi
+ * /api/employees/{empId}/tasks:
+ *   post:
+ *     tags:
+ *       - employees
+ *     description: Creates a new task for an employee
+ *     summary: Creates a new task
+ *     parameters:
+ *       - name: empId
+ *         in: path
+ *         required: true
+ *         description: Employee ID
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       description: Task object to be added
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *             required:
+ *               - text
+ *     responses:
+ *       201:
+ *         description: Task Created
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal Server Error
+ */
+const taskSchema = {
+  type: 'object',
+  properties: {
+    text: { type: 'string' }
+  },
+  required: ['text'],
+  additionalProperties: false
+};
+
+router.post('/:empId/tasks', (req, res, next) => {
+  try {
+    let { empId } = req.params;
+    empId = parseInt(empId, 10);
+    //if input not numerical, return 400
+    if (isNaN(empId)) {
+      return next(createError(400, 'Employee ID must be a number'));
+    }
+
+    mongo(async (db) => {
+      const employee = await db.collection('employees').findOne(
+        { empId: empId },
+        { projection: { empId: 1, todo: 1, done: 1 } }
+      );
+      console.log('tasks', employee);
+      //if not employee has matching empId, return 404
+      if (!employee) {
+        return next(createError(404, `Employee not found for empId ${empId}`));
+      }
+
+      //compile task schema 
+      const validate = ajv.compile(taskSchema);
+      //validate again schema 
+      const valid = validate(req.body);
+      //if validation fails send 400 
+      if (!valid) {
+        return next(createError(400, 'Invalid task payload', validate.errors));
+      }
+
+      const newTask = {
+        _id: new ObjectId(),
+        text: req.body.text
+      };
+
+      const result = await db.collection('employees').updateOne(
+        { empId: empId },
+        { $push: { todo: newTask } }
+      );
+
+      if (!result.modifiedCount) {
+        return next(createError(400, 'Unable to create task'));
+      }
+
+      res.status(201).send({ id: newTask._id });
+    }, next);
+
+  } catch (err) {
+    console.error('Error:', err);
+    next(err);
+  }
+});
+
+// updateTask:
+// ▪ Verb: PUT
 // ▪ Route: localhost:3000/api/employees/:empId/tasks
-// ▪ Status: 200 – OK
+// ▪ Status: 204 – No Content
 // ▪ Error Handling:
 // • 400 – Bad Request
 // • 404 – Not Found
 // • 500 – Internal Server Error
 
+// // updateTask:
+// router.put('/:empId/tasks', (req, res, next) => {
+//   try {
+//     let { empId } = req.params;
+//     empId = parseInt(empId, 10);
 
-// o createTask:
-// ▪ Verb: POST
-// ▪ Route: localhost:3000/api/employees/:empId/tasks
-// ▪ Status: 201 – Created
-// ▪ Error Handling:
-// • 400 – Bad Request
-// • 404 – Not Found
-//Special note. Swagger is required and must be used to document the API(s). 
+//     if (isNaN(empId)) {
+//       return next(createError(400, 'Employee ID must be a number'));
+//     }
+
+//     mongo(async (db) => {
+//       const task = await db.collection('employees').findOne(
+//         { empId: empId },
+//         { projection: { empId: 1, todo: 1, done: 1 } }
+//       );
+//       console.log('tasks', employee);
+
+//       if (!task) {
+//         return next(createError(404, `Employee not found for empId ${empId}`));
+//       } else {
+//         employee.task.set(req.body);
+
+
+//   } catch (err) {
+//     console.error('Error:', err);
+//     next(err);
+//   }
+// });
+
+
+module.exports = router;

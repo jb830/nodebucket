@@ -26,7 +26,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, '../dist/nodebucket')))
 app.use('/', express.static(path.join(__dirname, '../dist/nodebucket')))
 
-
 // object literal named options for API testing
 const options = {
   definition: {
@@ -36,7 +35,7 @@ const options = {
       version: '1.0.0',
     },
   },
-  apis: ['./routes/employee-routes.js']    
+  apis: ['server/routes/*.js','server/routes/employee-routes.js']    
 };
 
 //connect APIs

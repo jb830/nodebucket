@@ -17,10 +17,15 @@ import { RouterModule } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { SecurityService } from './security/security.service';
 import { HttpClientModule } from '@angular/common/http'; 
+import { Router } from '@angular/router';
+// import { GoogleMapsModule } from '@angular/google-maps';
+
 
 // Material
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
+import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/drag-drop';
+
 
 // My components
 import { HomeComponent } from './home/home.component';
@@ -31,7 +36,8 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { ContactComponent } from './contact/contact.component';
 import { AboutComponent } from './about/about.component';
 import { TasksComponent } from './tasks/tasks.component';
-// import { SigninComponent } from './security/signin/signin.component';
+
+
 
 @NgModule({
   declarations: [
@@ -44,7 +50,8 @@ import { TasksComponent } from './tasks/tasks.component';
     ContactComponent,
     AboutComponent,
     TasksComponent,
-    // SigninComponent,
+  
+
   ],
   imports: [
     BrowserModule,
@@ -54,12 +61,17 @@ import { TasksComponent } from './tasks/tasks.component';
     RouterModule,
     BrowserAnimationsModule,
     MatIconModule,
-    HttpClientModule
+    HttpClientModule,
+    CdkDrag,
+    CdkDropList, 
   ],
   providers: [
     CookieService,
     SecurityService,
+    
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+
+ }

@@ -1,0 +1,23 @@
+{
+  "id": "mongoId",
+  "employeeId": "1007",
+  "firstName": "Homer",
+  "lastName": "Simpson",
+  "todoList": [{
+      "taskId": "1",
+      "taskName": "Drink coffee",
+      "priorityRank": "1"
+    },
+    {
+      "taskId": "2",
+      "taskName": "Drink water",
+      "priorityRank": "1"
+    }
+  ],
+  "doneList": [{
+      "taskId": "4",
+      "taskName": "Drink coffee",
+      "priorityRank": "1"
+    }
+  ]
+}

@@ -1,21 +1,43 @@
-<div class="page-container flex-col text-center">
-  <h1 class="text-3xl lg:text-4xl 2xl:text-5xl lg:pb-8">Contact Us</h1>
 
-  <div class="grid gap-y-8 grid-cols-1 md:grid-cols-2 md:gap-x-14 py-8 px-4 md:p-10 xl:gap-x-48">
-    <div class="flex-col">
-      <mat-icon aria-hidden="false" aria-label="Phone icon" fontIcon="phone" color="light-accent"></mat-icon>
-      <h2 class="text-xl md:text-3xl pb-4 xl:pb-10">Phone</h2>
-      <p class="text-lg md:text-xl">Phone: 1(800)555-5435</p>
-      <p class="text-lg md:text-xl">Fax: 1(800)555-5432</p>
+<div class="2xl:h-screen justify-center flex flex-col items-center">
+  <div class="flex flex-col lg:flex-row w-full justify-center 2xl:w-2/3 2xl:shadow-lg">
+    <div class="w-full lg:w-1/2">
+      <div #mapContainer id="map" class="h-full w-full"></div>
     </div>
+    <div class="w-full bg-white lg:w-1/2 px-4 py-20 ">
+      <h2 class="text-3xl lg:text-4xl pl-6 pb-3 primary-text">Contact Us</h2>
+      <ul>
+        <li class="flex p-4">
+          <i class="material-icons px-2 secondary-text">phone</i>
 
-    <div class="leading-loose">
-      <mat-icon aria-hidden="false" aria-label="Location icon" fontIcon="location_on" color="light-accent"></mat-icon>
-      <h2 class="text-xl md:text-3xl py-4">Address</h2>
-      <p class="text-lg md:text-xl">4885 University Drive<br>
-        Chicago,IL<br>
-        60610</p>
+            <h4 class="text-lg lg:text-xl font-semibold ">Phone:</h4>
+            <a href="tel:+18005555435" class="text-lg lg:text-xl  pl-2">1(800)555-5435</a>
+        
+        </li>
+        <li class="flex  p-4">
+          <i class="material-icons px-2 secondary-text">fax</i>
+      
+            <h4 class="text-lg lg:text-xl font-semibold ">Fax:</h4>
+            <p class="text-lg lg:text-xl  pl-2">1(800)555-5432</p>
+        
+        </li>
+        <li class="flex  p-4">
+          <i class="material-icons px-2 secondary-text">email</i>
+      
+            <h4 class="text-lg lg:text-xl font-semibold ">Email:</h4>
+            <a href="mailto:support&#64;example.com" class="text-lg lg:text-xl  pl-2">support&#64;example.com</a>
+        
+        </li>
+        <li class="flex p-4">
+          <i class="material-icons px-2 secondary-text">location_pin</i>
+      
+            <h4 class="text-lg lg:text-xl font-semibold">Address:</h4>
+            <p class="text-lg lg:text-xl  pl-2">
+              Bellevue University<br>1000 Galvin Rd S<br> Bellevue, NE 68005
+            </p>
+        
+        </li>
+      </ul>
     </div>
   </div>
 </div>
-

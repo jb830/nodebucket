@@ -22,7 +22,13 @@
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
+    "types": ["google.maps"],
+    "skipLibCheck": true,
+    "typeRoots": [
+      "node_modules/@types",
+  ],
+
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -31,3 +37,4 @@
     "strictTemplates": true
   }
 }
+
