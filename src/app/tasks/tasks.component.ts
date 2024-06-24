@@ -12,6 +12,8 @@ import { NgForm } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+import { findIndex } from 'rxjs';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 export interface item {
   _id: string;
@@ -19,7 +21,7 @@ export interface item {
 }
 
 export interface Employee {
-  emptId: number;
+  empId: number;
   todo: item[];
   done: item[]; 
 }
@@ -35,21 +37,30 @@ export class TasksComponent {
   employee: Employee;
   todo: item[];
   done: item[];
+  taskId: string;
 
 
   constructor(private http: HttpClient, private cookieService: CookieService) {
+    
+    // get employee ID from cookies
     this.empId = parseInt(this.cookieService.get('session_user'), 10);
+    //initialize variables 
     this.employee = {} as Employee;
     this.todo = [];
     this.done = [];
+    this.taskId = this.cookieService.get('session_user');
 
+    // show list of tasks for employee 
+    // call API to get tasks 
     this.http.get(`/api/employees/${this.empId}/tasks`).subscribe({
       next: (emp:any) => {
+        //get employee
         this.employee = emp;
       },
       error: () => {
         console.error("Unable to get employee data for employee ID", this.empId)
       },
+      // Once employee found (on complete) add todo and done arrays to task columns for logged in employee 
       complete: () => {
         this.todo = this.employee.todo || [];
         this.done = this.employee.done || [];
@@ -58,24 +69,93 @@ export class TasksComponent {
   }
 
   createTask(form: NgForm) {
+    //see if form validation passed 
     if (form.valid) {
+      //initialize todoTask with input from user
       const todoTask = form.value.task;
-  
+      // API post call
       this.http.post(`/api/employees/${this.empId}/tasks`, {
         text: todoTask
       }).subscribe({
+        //callback - add task to to list after successful API completes 
         next: (result: any) => {
+          //create new todo object with _id and assign text to form input 
           const newToDoItem = {
             _id: result._id,
             text: todoTask 
           }
+          //push new todo object to todo array 
           this.todo.push(newToDoItem);
         },
+        //if there is an error, create error message 
         error: (err: any) => {
           console.error('Unable to create task for employee:', err);
         }
       });
     }
   }
+
+  // Update tasks if moved between todo and done arrays 
+  updateTask(empId: number, todo: item[], done: item[]) {
+    // API call to update tasks 
+    this.http.put(`/api/employees/${this.empId}/tasks`, {
+      // update new todo and done task arrays 
+      todo: todo,
+      done: done
+    }).subscribe({
+      // if successful log success message 
+      next: (result: any) => {
+        console.log('Task updated successfully');
+      },
+      // is error, log error message
+      error: (err: any) => {
+        console.error('Unable to update tasks for employee:', err);
+      }
+    });
+  }
+  
+  drop(event: CdkDragDrop<any[]>) {
+    if (event.previousContainer === event.container) {
+      // move items in same table 
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      console.log("Moved Item in array", event.container);
+    } else {
+      // move items between different tables 
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      console.log("Transferred Item to another array", event.container);
+    }
+    //update tasks if they are moved 
+    this.updateTask(this.empId, this.todo, this.done); 
+  }
+
+  deleteTask(taskId: string) {
+    //dialog box to confirm user wants to delete item 
+    if (window.confirm('Are you sure you would like to delete this task?')) {
+      //API call to delete task by id  
+      this.http.delete(`/api/employees/${this.empId}/tasks/${taskId}`).subscribe({
+        next: () => {
+          //delete task from the todo or done array and create new array without the taskId
+          this.todo = this.todo.filter(t => t._id !== taskId);
+          this.done = this.done.filter(t => t._id !== taskId);
+          console.log('Task deletion successful');
+        },
+        // if error, send error message 
+        error: (err: any) => {
+          console.error('Unable to delete task for employee:', err);
+        }
+      });
+    } else {
+      //ensure cancel works 
+      console.log('User clicked cancel');
+    }
+  }
+  
   
 }
+  
+

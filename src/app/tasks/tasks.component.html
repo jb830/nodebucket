@@ -1,15 +1,12 @@
 <div class="page-container bg-color">
-  <div
-    class="tasks-container w-full md:w-4/5 2xl:w-1/2 mt-4 mb-8 px-10 2xl:px-20 md:mb-4 md:mt-4 2xl:mb-12 md:border md:rounded-xl shadow-lg">
+  <div class="tasks-container w-full md:w-4/5 2xl:w-1/2 mt-4 mb-8 px-10 2xl:px-20 md:mb-4 md:mt-4 2xl:mb-12 md:border md:rounded-xl shadow-lg">
     <h1 class="text-3xl lg:text-4xl 2xl:text-5xl lg:pb-4 pt-4 text-black md:pt-14 2xl:pt-20">Task Manager</h1>
 
-    <!--FORM-->
-    <form #taskForm="ngForm" (ngSubmit)="createTask(taskForm); taskForm.reset()"
-      class="py-6 flex flex-col md:flex-row gap-2 md:gap-0">
+    <!-- FORM -->
+    <form #taskForm="ngForm" (ngSubmit)="createTask(taskForm); taskForm.reset()" class="py-6 flex flex-col md:flex-row gap-2 md:gap-0">
       <input type="text" name="task" ngModel required spellcheck="true" placeholder="Enter task here"
         class="w-full md:basis-3/4 md:rounded-l-lg md:rounded-r-none block p-2 border border-gray-300 rounded-lg shadow-sm">
-      <button [disabled]="!taskForm.valid"
-        class="w-full md:basis-1/4 md:rounded-r-lg md:rounded-l-none font-bold p-2 rounded-lg">
+      <button [disabled]="!taskForm.valid" class="w-full md:basis-1/4 md:rounded-r-lg md:rounded-l-none font-bold p-2 rounded-lg">
         Add Task
         <i class="material-icons text-white align-middle">add</i>
       </button>
@@ -17,7 +14,7 @@
 
     <div class="table-container flex flex-col gap-4 md:flex-row justify-between pb-12">
       
-      <!--TO DO TABLE-->
+      <!-- TO DO TABLE -->
       <div class="flex flex-col w-full md:w-1/2">
         <div class="-m-1.5 overflow-x-auto">
           <div class="p-1.5 min-w-full inline-block align-middle">
@@ -28,7 +25,14 @@
                     <th scope="col" class="px-6 py-3 text-xs font-bold text-white text-center uppercase">To Do</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 rounded-b-lg">
+                <tbody
+                  cdkDropList
+                  id="todoList"
+                  #todoList="cdkDropList"
+                  [cdkDropListConnectedTo]="['doneList']"
+                  [cdkDropListData]="todo"
+                  class="divide-y divide-gray-200 rounded-b-lg"
+                  (cdkDropListDropped)="drop($event)">
                   <tr *ngIf="todo.length === 0 || !todo" class="hover:shadow-md focus:shadow focus:border-slate-500">
                     <td class="px-6 py-4 text-start text-sm font-medium text-gray-800">
                       <a class="flex justify-between items-center w-full">
@@ -36,15 +40,12 @@
                       </a>
                     </td>
                   </tr>
-                  <tr *ngFor="let item of todo" class="hover:shadow-md focus:shadow focus:border-slate-500">
+                  <tr *ngFor="let item of todo" class="hover:shadow-md focus:shadow focus:border-slate-500" cdkDrag>
                     <td class="px-6 py-4 text-start text-sm font-medium text-gray-800">
                       <a class="flex justify-between items-center w-full">
                         <span>{{item.text}}</span>
                         <div>
-                          <button class="bg-transparent self-end hover:opacity-100">
-                            <i class="material-icons ml-2 primary-text hover:text-blue-500 ">edit</i>
-                          </button>
-                          <button class="bg-transparent self-end hover:opacity-100">
+                          <button id="deleteAlert" (click)="deleteTask(item._id)" class="bg-transparent self-end hover:opacity-100">
                             <i class="material-icons ml-2 primary-text hover:text-red-700">delete</i>
                           </button>
                         </div>
@@ -58,7 +59,7 @@
         </div>
       </div>
 
-      <!--DONE TABLE-->
+      <!-- DONE TABLE -->
       <div class="flex flex-col w-full md:w-1/2">
         <div class="-m-1.5 overflow-x-auto">
           <div class="p-1.5 min-w-full inline-block align-middle">
@@ -69,24 +70,27 @@
                     <th scope="col" class="px-6 py-3 text-center text-xs font-lg text-white uppercase">Done</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 rounded-b-lg">
-                <tbody class="divide-y divide-gray-200 rounded-b-lg">
-                  <tr *ngIf="done.length === 0 || !todo" class="hover:shadow-md focus:shadow focus:border-slate-500">
-                    <td class="px-6 py-4 text-start text-sm font-medium text-gray-800">
+                <tbody
+                  cdkDropList
+                  id="doneList"
+                  #doneList="cdkDropList"
+                  [cdkDropListConnectedTo]="['todoList']"
+                  [cdkDropListData]="done"
+                  class="divide-y divide-gray-200 rounded-b-lg"
+                  (cdkDropListDropped)="drop($event)">
+                  <tr *ngIf="done.length === 0 || !done" class="hover:shadow-md focus:shadow focus:border-slate-500" >
+                    <td class="px-6 py-4 text-start text-sm font-medium text-gray-800" *cdkDragPlaceholder>
                       <a class="flex justify-between items-center w-full">
                         <span>No Tasks Available</span>
                       </a>
                     </td>
                   </tr>
-                  <tr *ngFor="let item of done" class="hover:shadow-md focus:shadow focus:border-slate-500">
+                  <tr *ngFor="let item of done" class="hover:shadow-md focus:shadow focus:border-slate-500" cdkDrag>
                     <td class="px-6 py-4 text-start text-sm font-medium text-gray-800">
                       <a class="flex justify-between items-center w-full">
                         <span>{{item.text}}</span>
                         <div>
-                          <button class="bg-transparent self-end hover:opacity-100">
-                            <i class="material-icons ml-2 primary-text hover:text-blue-500 ">edit</i>
-                          </button>
-                          <button class="bg-transparent self-end hover:opacity-100">
+                          <button (click)="deleteTask(item._id)" class="bg-transparent self-end hover:opacity-100">
                             <i class="material-icons ml-2 primary-text hover:text-red-700">delete</i>
                           </button>
                         </div>

@@ -18,13 +18,13 @@ import { CookieService } from 'ngx-cookie-service';
 import { SecurityService } from './security/security.service';
 import { HttpClientModule } from '@angular/common/http'; 
 import { Router } from '@angular/router';
-// import { GoogleMapsModule } from '@angular/google-maps';
 
 
 // Material
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 
 // My components
@@ -37,8 +37,6 @@ import { ContactComponent } from './contact/contact.component';
 import { AboutComponent } from './about/about.component';
 import { TasksComponent } from './tasks/tasks.component';
 
-
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -50,8 +48,6 @@ import { TasksComponent } from './tasks/tasks.component';
     ContactComponent,
     AboutComponent,
     TasksComponent,
-  
-
   ],
   imports: [
     BrowserModule,
@@ -64,6 +60,7 @@ import { TasksComponent } from './tasks/tasks.component';
     HttpClientModule,
     CdkDrag,
     CdkDropList, 
+    DragDropModule
   ],
   providers: [
     CookieService,

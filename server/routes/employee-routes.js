@@ -15,7 +15,6 @@ const createError = require('http-errors');
 const Ajv = require('ajv');
 const { ObjectId } = require('mongodb');
 const ajv = new Ajv();
-
 const router = express.Router();
 
 /**
@@ -46,7 +45,9 @@ const router = express.Router();
  */
 router.get('/:empId', (req, res, next) => {
   try {
-    let { empId } = req.params;
+    let {
+      empId
+    } = req.params;
     empId = parseInt(empId, 10);
     //if input not numerical,return 400 
     if (isNaN(empId)) {
@@ -55,10 +56,12 @@ router.get('/:empId', (req, res, next) => {
       console.error(400, 'Input must be a number');
       return next(err);
     }
-    
+
     //fund employee by ID 
     mongo(async (db) => {
-      const employee = await db.collection('employees').findOne({ empId });
+      const employee = await db.collection('employees').findOne({
+        empId
+      });
       //If no employee ID matches, send 404  
       if (!employee) {
         console.error('Employee not found', empId);
@@ -111,10 +114,15 @@ router.get('/:empId/tasks', (req, res, next) => {
     }
 
     mongo(async (db) => {
-      const tasks = await db.collection('employees').findOne(
-        { empId: empId },
-        { projection: { empId: 1, todo: 1, done: 1 } }
-      );
+      const tasks = await db.collection('employees').findOne({
+        empId: empId
+      }, {
+        projection: {
+          empId: 1,
+          todo: 1,
+          done: 1
+        }
+      });
       console.log('tasks', tasks);
       //if not employee has matching empId, return 404 
       if (!tasks) {
@@ -164,7 +172,7 @@ router.get('/:empId/tasks', (req, res, next) => {
  *               - text
  *     responses:
  *       201:
- *         description: Task Created
+ *         description: Task Created / no return data but something created
  *       400:
  *         description: Bad request
  *       404:
@@ -172,18 +180,23 @@ router.get('/:empId/tasks', (req, res, next) => {
  *       500:
  *         description: Internal Server Error
  */
-const taskSchema = {
+
+const addTaskSchema = {
   type: 'object',
-  properties: {
-    text: { type: 'string' }
-  },
   required: ['text'],
-  additionalProperties: false
+  additionalProperties: false,
+  properties: {
+    text: {
+      type: 'string'
+    }
+  }
 };
 
 router.post('/:empId/tasks', (req, res, next) => {
   try {
-    let { empId } = req.params;
+    let {
+      empId
+    } = req.params;
     empId = parseInt(empId, 10);
     //if input not numerical, return 400
     if (isNaN(empId)) {
@@ -191,40 +204,51 @@ router.post('/:empId/tasks', (req, res, next) => {
     }
 
     mongo(async (db) => {
-      const employee = await db.collection('employees').findOne(
-        { empId: empId },
-        { projection: { empId: 1, todo: 1, done: 1 } }
-      );
+      const employee = await db.collection('employees').findOne({
+        empId: empId
+      }, {
+        projection: {
+          empId: 1,
+          todo: 1,
+          done: 1
+        }
+      });
       console.log('tasks', employee);
-      //if not employee has matching empId, return 404
+      //if no employee has matching empId, return 404
       if (!employee) {
         return next(createError(404, `Employee not found for empId ${empId}`));
       }
-
       //compile task schema 
-      const validate = ajv.compile(taskSchema);
-      //validate again schema 
+      const validate = ajv.compile(addTaskSchema);
+      //validate against schema 
       const valid = validate(req.body);
       //if validation fails send 400 
       if (!valid) {
         return next(createError(400, 'Invalid task payload', validate.errors));
       }
+      console.log("Validation Success")
 
       const newTask = {
         _id: new ObjectId(),
         text: req.body.text
       };
 
-      const result = await db.collection('employees').updateOne(
-        { empId: empId },
-        { $push: { todo: newTask } }
-      );
+      const result = await db.collection('employees').updateOne({
+        empId: empId
+      }, {
+        $push: {
+          todo: newTask
+        }
+      });
 
       if (!result.modifiedCount) {
         return next(createError(400, 'Unable to create task'));
       }
 
-      res.status(201).send({ id: newTask._id });
+      res.status(201).send({
+        _id: newTask._id,
+        text: newTask.text
+      });
     }, next);
 
   } catch (err) {
@@ -233,43 +257,196 @@ router.post('/:empId/tasks', (req, res, next) => {
   }
 });
 
-// updateTask:
-// ▪ Verb: PUT
-// ▪ Route: localhost:3000/api/employees/:empId/tasks
-// ▪ Status: 204 – No Content
-// ▪ Error Handling:
-// • 400 – Bad Request
-// • 404 – Not Found
-// • 500 – Internal Server Error
 
-// // updateTask:
-// router.put('/:empId/tasks', (req, res, next) => {
-//   try {
-//     let { empId } = req.params;
-//     empId = parseInt(empId, 10);
+/**
+ ** updateTask
+ * @openapi
+ * /api/employees/{empId}/tasks:
+ *   put:
+ *     tags:
+ *       - tasks
+ *     description: Updates task document
+ *     summary: updates a task document
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: task document
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '204':
+ *         description: No Content/ no return data
+ *       '400':
+ *         description: Bad Request
+ *       '404':
+ *         description: Not Found
+ *       '500':
+ *         description: – Internal Server Error
+ */
+ const updateTaskSchema = {
+  type: 'object',
+  required: ['todo', 'done'],
+  additionalProperties: false,
+  properties: {
+    todo: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['_id', 'text'],
+        additionalProperties: false,
+        properties: {
+          _id: {
+            type: 'string'
+          },
+          text: {
+            type: 'string'
+          }
+        }
+      }
+    },
+    done: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['_id', 'text'],
+        additionalProperties: false,
+        properties: {
+          _id: {
+            type: 'string'
+          },
+          text: {
+            type: 'string'
+          }
+        }
+      }
+    }
+  }
+};
+ router.put('/:empId/tasks', (req, res, next) => {
+  try {
+    let { empId } = req.params;
+    //Make sure employee ID is a number 
+    empId = parseInt(empId, 10);
+    if (isNaN(empId)) {
+      return next(createError(400, 'Employee ID must be a number'));
+    }
+    //Connect to mongo DB, 
+    mongo(async (db) => {
+      const employee = await db.collection('employees').findOne({
+        empId: empId
+      });
+      console.log(empId);
 
-//     if (isNaN(empId)) {
-//       return next(createError(400, 'Employee ID must be a number'));
-//     }
+      if (!employee) {
+        return next(createError(404, `Employee not found for empId ${empId}`));
+      }
+      console.log("Employee Found")
 
-//     mongo(async (db) => {
-//       const task = await db.collection('employees').findOne(
-//         { empId: empId },
-//         { projection: { empId: 1, todo: 1, done: 1 } }
-//       );
-//       console.log('tasks', employee);
+      const tasks = req.body;
 
-//       if (!task) {
-//         return next(createError(404, `Employee not found for empId ${empId}`));
-//       } else {
-//         employee.task.set(req.body);
+      console.log(tasks)
+
+      const validate = ajv.compile(updateTaskSchema);
+      const valid = validate(req.body);
+      if (!valid) {
+        return next(createError(400, 'Invalid task payload', validate.errors));
+      }
+      console.log("taskSchema validated")
+      
+      const result = await db.collection('employees').updateOne(
+        { empId: empId },
+        { $set: { todo: tasks.todo, done: tasks.done } }
+      );
+
+      res.status(204).send('Tasks updated');
+    }, next);
+    //Catch MongoDB errors if try fails
+  } catch (err) {
+    console.error('Error:', err);
+    next(err);
+  }
+});
 
 
-//   } catch (err) {
-//     console.error('Error:', err);
-//     next(err);
-//   }
-// });
 
+/**
+ ** deleteTask
+ * @openapi
+ * /api/employees/{empId}/tasks:
+ *   delete:
+ *     tags:
+ *       - tasks
+ *     description: Deletes task document
+ *     summary: Deletes a task document by id whether it is in 'todo' or 'done' arrays
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: task document
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '204':
+ *         description: No Content/ no return data
+ *       '400':
+ *         description: Bad Request
+ *       '404':
+ *         description: Not Found
+ *       '500':
+ *         description: – Internal Server Error
+ */
+
+router.delete('/:empId/tasks/:taskId', (req, res, next) => {
+  try { 
+    let { empId } = req.params;
+    let { taskId } = req.params;
+
+    //Make sure emp ID is a number, if not 400 bad request
+    empId = parseInt(empId, 10);
+    if (isNaN(empId)) {
+      return next(createError(400, 'Employee ID must be a number'));
+    }
+    //connect to database 
+    mongo(async (db) => {
+
+      console.log(taskId)
+      //Find employee by ID in database: request only empId, todo array, and done array
+      const employee = await db.collection('employees').findOne({
+        empId: empId
+      });
+      //If user is not found, send 404, Not Found
+      if (!employee) {
+        return next(createError(404, `Employee not found for empId ${empId}`));
+      }
+
+      if (!employee.todo) employee.todo = [];
+      if (!employee.done) employee.done = [];
+      
+      const todo = employee.todo.filter(t=> t._id.toString() !== taskId.toString());
+      const done = employee.done.filter(t=> t._id.toString() !== taskId.toString());
+      
+      
+      //If user exists, update todo list by pulling the task by taskId
+      const result = await db.collection('employees').updateOne({
+        empId: empId
+      }, {
+        $set: { todo: todo, done: done }
+      });
+
+      console.log(taskId)
+      // If no modifications counted, send 400 error
+      if (!result.modifiedCount) {
+        return next(createError(400, 'Unable to delete task'));
+      }
+      // If task deleted, send 204 success, no return data 
+      res.status(204).send('Task deleted')
+    });
+
+  } catch (err) {
+    console.error('Error:', err);
+    next(err);
+  }
+});
 
 module.exports = router;

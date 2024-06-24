@@ -46,19 +46,20 @@ const routes: Routes = [{
         component: TasksComponent,
         canActivate: [AuthGuard]
       },
-      {
-        path: 'not-found',
-        component: NotFoundComponent
-      },
-      // {
-      //   path: '**',
-      //   redirectTo: 'not-found'
-      // }
-    ]
+    ],
+
   },
   {
     path: 'security',
     loadChildren: () => import('./security/security.module').then(m => m.SecurityModule)
+  },
+  {
+    path: 'not-found',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found'
   }
 ];
 
