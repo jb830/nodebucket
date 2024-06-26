@@ -120,6 +120,7 @@ router.get('/:empId/tasks', (req, res, next) => {
         projection: {
           empId: 1,
           todo: 1,
+          doing: 1,
           done: 1
         }
       });
@@ -210,6 +211,7 @@ router.post('/:empId/tasks', (req, res, next) => {
         projection: {
           empId: 1,
           todo: 1,
+          doing: 1,
           done: 1
         }
       });
@@ -286,10 +288,26 @@ router.post('/:empId/tasks', (req, res, next) => {
  */
  const updateTaskSchema = {
   type: 'object',
-  required: ['todo', 'done'],
+  required: ['todo', 'doing', 'done'],
   additionalProperties: false,
   properties: {
     todo: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['_id', 'text'],
+        additionalProperties: false,
+        properties: {
+          _id: {
+            type: 'string'
+          },
+          text: {
+            type: 'string'
+          }
+        }
+      }
+    },
+    doing: {
       type: 'array',
       items: {
         type: 'object',
@@ -323,50 +341,42 @@ router.post('/:empId/tasks', (req, res, next) => {
     }
   }
 };
- router.put('/:empId/tasks', (req, res, next) => {
+router.put('/:empId/tasks', (req, res, next) => {
   try {
     let { empId } = req.params;
-    //Make sure employee ID is a number 
+    // Make sure employee ID is a number
     empId = parseInt(empId, 10);
     if (isNaN(empId)) {
       return next(createError(400, 'Employee ID must be a number'));
     }
-    //Connect to mongo DB, 
+    // Connect to MongoDB
     mongo(async (db) => {
-      const employee = await db.collection('employees').findOne({
-        empId: empId
-      });
-      console.log(empId);
-
+      const employee = await db.collection('employees').findOne({ empId: empId });
       if (!employee) {
         return next(createError(404, `Employee not found for empId ${empId}`));
       }
-      console.log("Employee Found")
-
+      // Assign tasks to request
       const tasks = req.body;
-
-      console.log(tasks)
-
+      // Validate schema
       const validate = ajv.compile(updateTaskSchema);
       const valid = validate(req.body);
       if (!valid) {
         return next(createError(400, 'Invalid task payload', validate.errors));
       }
-      console.log("taskSchema validated")
-      
+      // Update tasks
       const result = await db.collection('employees').updateOne(
         { empId: empId },
-        { $set: { todo: tasks.todo, done: tasks.done } }
+        { $set: { todo: tasks.todo, doing: tasks.doing, done: tasks.done } }
       );
-
+      // Success status if tasks were updated
       res.status(204).send('Tasks updated');
     }, next);
-    //Catch MongoDB errors if try fails
   } catch (err) {
     console.error('Error:', err);
     next(err);
   }
 });
+
 
 
 

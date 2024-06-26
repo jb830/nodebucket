@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 //Theme
 .primary {
   background-color: #0D1E4B;
@@ -40,7 +41,7 @@ body {
 }
 
 body.home-bg {
-  background-image: url('./assets/images/hero2.jpg'); 
+  background-image: url('assets/images/hero2.jpg'); 
   // background-attachment: fixed;
   background-size: cover;
   background-position: top;
@@ -49,6 +50,9 @@ body.home-bg {
   transition: background-image 0.5s ease-in-out;
 }
 
+body.mobile-bg {
+  background-image: url('assets/images/hero-ph.jpg'); 
+}
 
 button {
   background-color: map-get(theme.$light-primary, 500);

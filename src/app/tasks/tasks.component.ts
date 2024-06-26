@@ -7,13 +7,11 @@
 ; Description: Tasks Component
 ;===========================================
 */
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { HttpClient } from '@angular/common/http';
-import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
-import { findIndex } from 'rxjs';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 
 export interface item {
   _id: string;
@@ -23,6 +21,7 @@ export interface item {
 export interface Employee {
   empId: number;
   todo: item[];
+  doing: item[],
   done: item[]; 
 }
 
@@ -31,22 +30,22 @@ export interface Employee {
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.scss'],
 })
-export class TasksComponent {
 
+export class TasksComponent {
   empId: number;
   employee: Employee;
   todo: item[];
+  doing: item[];
   done: item[];
   taskId: string;
 
-
   constructor(private http: HttpClient, private cookieService: CookieService) {
-    
     // get employee ID from cookies
     this.empId = parseInt(this.cookieService.get('session_user'), 10);
     //initialize variables 
     this.employee = {} as Employee;
     this.todo = [];
+    this.doing = [];
     this.done = [];
     this.taskId = this.cookieService.get('session_user');
 
@@ -63,7 +62,9 @@ export class TasksComponent {
       // Once employee found (on complete) add todo and done arrays to task columns for logged in employee 
       complete: () => {
         this.todo = this.employee.todo || [];
+        this.doing = this.employee.doing || [];
         this.done = this.employee.done || [];
+
       }
     })
   }
@@ -96,11 +97,12 @@ export class TasksComponent {
   }
 
   // Update tasks if moved between todo and done arrays 
-  updateTask(empId: number, todo: item[], done: item[]) {
+  updateTask(empId: number, todo: item[], doing: item[], done: item[]) {
     // API call to update tasks 
     this.http.put(`/api/employees/${this.empId}/tasks`, {
       // update new todo and done task arrays 
       todo: todo,
+      doing: doing,
       done: done
     }).subscribe({
       // if successful log success message 
@@ -118,7 +120,7 @@ export class TasksComponent {
     if (event.previousContainer === event.container) {
       // move items in same table 
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-      console.log("Moved Item in array", event.container);
+      console.log("Moved Item in array", event.container.data);
     } else {
       // move items between different tables 
       transferArrayItem(
@@ -127,10 +129,10 @@ export class TasksComponent {
         event.previousIndex,
         event.currentIndex
       );
-      console.log("Transferred Item to another array", event.container);
+      console.log("Transferred Item to another array", event.container.data);
     }
-    //update tasks if they are moved 
-    this.updateTask(this.empId, this.todo, this.done); 
+    // update tasks if they are moved 
+    this.updateTask(this.empId, this.todo, this.doing, this.done);
   }
 
   deleteTask(taskId: string) {
@@ -141,6 +143,7 @@ export class TasksComponent {
         next: () => {
           //delete task from the todo or done array and create new array without the taskId
           this.todo = this.todo.filter(t => t._id !== taskId);
+          this.doing = this.doing.filter(t => t._id !== taskId);
           this.done = this.done.filter(t => t._id !== taskId);
           console.log('Task deletion successful');
         },
