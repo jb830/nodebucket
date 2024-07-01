@@ -431,9 +431,11 @@ router.delete('/:empId/tasks/:taskId', (req, res, next) => {
       }
 
       if (!employee.todo) employee.todo = [];
+      if (!employee.todo) employee.doing = [];
       if (!employee.done) employee.done = [];
       
       const todo = employee.todo.filter(t=> t._id.toString() !== taskId.toString());
+      const doing = employee.doing.filter(t=> t._id.toString() !== taskId.toString());
       const done = employee.done.filter(t=> t._id.toString() !== taskId.toString());
       
       
@@ -441,7 +443,7 @@ router.delete('/:empId/tasks/:taskId', (req, res, next) => {
       const result = await db.collection('employees').updateOne({
         empId: empId
       }, {
-        $set: { todo: todo, done: done }
+        $set: { todo: todo, doing: doing, done: done }
       });
 
       console.log(taskId)
